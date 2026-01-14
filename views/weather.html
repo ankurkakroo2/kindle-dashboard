@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1680, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <style>
+        /* Kindle-friendly: table layout, system font, fixed width */
+        body {
+            font-family: "Amazon Ember", "Helvetica LT", Helvetica, Arial, sans-serif;
+            background: #ffffff;
+            color: #000000;
+            padding: 24px 32px;
+        }
+        html, body {
+            width: 1680px;
+            min-width: 1680px;
+            max-width: 1680px;
+            overflow-x: hidden;
+        }
+        .container {
+            width: 1550px;
+            margin: 0 auto;
+        }
+        .row { display: table; width: 100%; }
+        .cell { display: table-cell; vertical-align: middle; }
+        .bordered { border: 2px solid #000000; border-radius: 8px; padding: 12px; }
+        .dotted { border-left: 2px dotted #000000; }
+        .divider { border-top: 2px solid #000000; margin: 14px 0; }
+        .sep-v { border-left: 2px dotted #000000; }
+        .sep-h { border-top: 2px solid #000000; margin: 12px 0; }
+
+        /* Top blocks */
+        .icon-big { font-size: 150px; font-weight: 900; text-align: center; }
+        .temp-big { font-size: 150px; font-weight: 900; text-align: center; }
+        .temp-label { font-size: 18px; font-weight: 800; text-align: center; }
+
+        .metric-title { font-size: 18px; font-weight: 800; }
+        .metric-value { font-size: 28px; font-weight: 900; }
+        .metric-row { padding: 6px 0; }
+
+        /* Bottom rows */
+        .small-icon { font-size: 32px; font-weight: 900; padding-right: 10px; }
+        .line-text { font-size: 18px; font-weight: 800; }
+        .line-sub { font-size: 16px; font-weight: 700; }
+
+        .temp-range { font-size: 22px; font-weight: 900; text-align: right; }
+
+        .footer { margin-top: 12px; font-size: 16px; font-weight: 800; display: table; width: 100%; }
+        .footer-left { display: table-cell; text-align: left; }
+        .footer-right { display: table-cell; text-align: right; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row" style="margin-bottom: 10px;">
+        <div class="cell" style="font-size: 22px; font-weight:900;">Weather Dashboard</div>
+        <div class="cell" style="text-align: right; font-size: 13px;">
+            API: <input id="api-base" type="text" style="width: 260px; font-size: 13px;" />
+            <button style="font-size: 13px;" onclick="saveApiBase()">Save</button>
+            <div id="local-time" style="margin-top:6px; font-weight:800;">--:--</div>
+            <div id="status" style="margin-top:4px; font-size:12px; font-weight:700;">Waiting...</div>
+        </div>
+    </div>
+
+    <!-- Top row only: no outer rectangle, just vertical dotted separators -->
+    <div class="row" style="height: 240px; padding: 16px 40px;">
+        <div class="cell" style="width: 30%; text-align: center;">
+            <div class="icon-big" id="icon-main">☀️</div>
+        </div>
+        <div class="cell sep-v" style="width: 32%; padding-left: 18px;">
+            <div class="temp-big" id="temp-main">--°</div>
+            <div class="temp-label" id="temp-time">Temperature (--)</div>
+        </div>
+        <div class="cell sep-v" style="width: 38%; padding-left: 18px;">
+            <div class="metric-row">
+                <span class="metric-value" id="feels-like">--°</span>
+                <span class="metric-title"> Feels Like</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-value" id="humidity">--%</span>
+                <span class="metric-title"> Humidity</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-value" id="condition">--</span>
+                <span class="metric-title"> Right Now</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer" style="margin-top:14px;">
+        <div class="footer-left">☁ Weather</div>
+        <div class="footer-right">Gurugram, India</div>
+    </div>
+</div>
+
+<script>
+const fallbackBase = 'http://192.168.1.140:5001';
+const storedBase = localStorage.getItem('weatherApiBase');
+const originBase = (typeof window !== 'undefined' ? window.location.origin : '') || '';
+let base = storedBase || (originBase.startsWith('http') ? originBase : fallbackBase);
+base = base.replace(/\/$/, '');
+let WEATHER_URL = `${base}/api/weather`;
+
+function saveApiBase() {
+    const input = document.getElementById('api-base');
+    const val = input.value.trim();
+    if (val) {
+        localStorage.setItem('weatherApiBase', val);
+        WEATHER_URL = `${val.replace(/\/$/, '')}/api/weather`;
+        fetchWeather();
+    }
+}
+
+
+function updateUI(data) {
+    const f = (v) => (v === undefined || v === null || Number.isNaN(v)) ? '--' : Math.round(v);
+    const fmt = (t) => t ? new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '--';
+
+    document.getElementById('temp-main').textContent = `${f(data.temp)}°`;
+    document.getElementById('temp-time').textContent = `Temperature (${fmt(data.time)})`;
+    document.getElementById('feels-like').textContent = `${f(data.feelsLike)}°`;
+    document.getElementById('humidity').textContent = `${f(data.humidity)}%`;
+    document.getElementById('condition').textContent = mapCondition(data.condition);
+
+    document.getElementById('status').textContent = 'OK';
+}
+
+function mapCondition(code) {
+    // Basic mapping for open-meteo weather codes
+    if (code === undefined || code === null) return '--';
+    const c = Number(code);
+    if (c === 0) return 'Sunny';
+    if ([1, 2, 3].includes(c)) return 'Partly Cloudy';
+    if ([45, 48].includes(c)) return 'Fog';
+    if ([51, 53, 55].includes(c)) return 'Drizzle';
+    if ([61, 63, 65].includes(c)) return 'Rain';
+    if ([71, 73, 75].includes(c)) return 'Snow';
+    if ([80, 81, 82].includes(c)) return 'Showers';
+    return 'Cloudy';
+}
+
+async function fetchWeather() {
+    try {
+        const res = await fetch(WEATHER_URL);
+        const data = await res.json();
+        updateUI(data);
+    } catch (e) {
+        console.log('weather fetch failed', e);
+        document.getElementById('status').textContent = 'Fetch failed';
+    }
+}
+
+function init() {
+    const saved = localStorage.getItem('weatherApiBase');
+    if (saved) {
+        document.getElementById('api-base').value = saved;
+        WEATHER_URL = `${saved.replace(/\/$/, '')}/api/weather`;
+    } else {
+        document.getElementById('api-base').value = base;
+        WEATHER_URL = `${base}/api/weather`;
+    }
+    fetchWeather();
+    setInterval(fetchWeather, 60 * 1000);
+    updateLocalTime();
+    setInterval(updateLocalTime, 30 * 1000);
+}
+
+function updateLocalTime() {
+    const now = new Date();
+    document.getElementById('local-time').textContent = now.toLocaleString();
+}
+
+init();
+</script>
+</body>
+</html>

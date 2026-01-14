@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <h1>JavaScript Test</h1>
+    <div id="test1">TEST 1: This should stay</div>
+    <div id="test2">TEST 2: This should change to "JavaScript is working!"</div>
+    <div id="test3">TEST 3: Waiting for API...</div>
+
+<script>
+// Very basic ES5 JavaScript test
+document.getElementById('test2').innerHTML = 'JavaScript is working!';
+
+// Test XHR
+var xhr = new XMLHttpRequest();
+xhr.open('GET', 'http://192.168.1.140:5001/api/weather', true);
+xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
+            document.getElementById('test3').innerHTML = 'API SUCCESS: ' + xhr.responseText.substring(0, 50);
+        } else {
+            document.getElementById('test3').innerHTML = 'API FAILED: status ' + xhr.status;
+        }
+    }
+};
+xhr.send();
+</script>
+
+</body>
+</html>
