@@ -9,8 +9,9 @@
 
 Build a **Cal.com-inspired dashboard** that displays on a jailbroken Kindle Oasis (10th Gen) in **landscape mode** with:
 - Live weather for Gurugram, India
-- Calendar timeline with events
+- Calendar timeline with events (synced from macOS Calendar)
 - Todo list
+- GitHub contribution graph
 - **NO URL bar or browser chrome** (achieved ✅)
 - **Landscape orientation** (NOT achieved ❌ - this is the current blocker)
 - Auto-refresh capability
@@ -24,8 +25,10 @@ Build a **Cal.com-inspired dashboard** that displays on a jailbroken Kindle Oasi
 - Server-side rendering (SSR) - generates complete HTML with data
 - Browser launches on Kindle **without URL bar** using `lipc-set-prop`
 - Weather API integration (Open-Meteo, live data)
-- Calendar API (30 mock events)
-- Todos API (5 tasks)
+- Calendar API with automatic sync service (icalBuddy, every 10 minutes)
+- Todos API with CRUD operations
+- GitHub integration (GraphQL API, requires credentials)
+- HackerNews service (ready for integration)
 - SSH access to Kindle
 - Screenshot capture for testing
 - KUAL launcher integration
@@ -49,8 +52,8 @@ Build a **Cal.com-inspired dashboard** that displays on a jailbroken Kindle Oasi
 ### Development Machine (Mac)
 - **IP Address:** `192.168.1.140`
 - **Server Location:** `/Users/ankur/D/Playground/kindle-upgrade/`
-- **Server Port:** `5001`
-- **Git Repo:** `/Users/ankur/D/Playground/kindle-upgrade` (initialized, not pushed yet)
+- **Server Port:** `5001` (configurable via `PORT` env var)
+- **Git Repo:** `https://github.com/ankurkakroo2/kindle-dashboard` (public)
 
 ### Kindle Device
 - **Model:** Kindle Oasis 10th Gen
@@ -61,9 +64,10 @@ Build a **Cal.com-inspired dashboard** that displays on a jailbroken Kindle Oasi
 - **SSH Password:** `kindle`
 
 ### Key Constraints
-- **Old WebKit:** No CSS grid/flex, no modern JS features
+- **Old WebKit:** No CSS grid/flex, no modern JS features (for KOReader)
 - **KOReader:** Does NOT execute JavaScript
-- **Must use:** Server-side rendering, table layouts, system fonts
+- **Must use:** Server-side rendering, table layouts, system fonts (for KOReader)
+- **Browser:** Modern Chromium supports ES6+ and modern CSS
 
 ---
 
@@ -95,14 +99,47 @@ curl http://192.168.1.140:5001/api/weather
 # Should return live weather JSON
 ```
 
-### 2. Access the Dashboard
+### 2. Environment Variables (Optional)
 
-**On Desktop (for testing):**
-- Preview with JS: `http://192.168.1.140:5001/preview-dashboard`
-- Server-rendered: `http://192.168.1.140:5001/kindle`
+Create a `.env` file in the project root:
+```bash
+PORT=5001
+GITHUB_USERNAME=your_username
+GITHUB_TOKEN=your_github_personal_access_token
+CALENDAR_URL=https://your-calendar-url.ics
+```
 
-**On Kindle:**
-- Must use server-rendered endpoint: `http://192.168.1.140:5001/kindle`
+**Note:** GitHub integration requires credentials. Calendar sync uses macOS Calendar app via icalBuddy, so `CALENDAR_URL` is optional.
+
+### 3. Calendar Sync Service
+
+The calendar sync service starts automatically when the server starts:
+- Runs in background, syncs every 10 minutes
+- Uses `icalBuddy` via Node.js wrapper (`scripts/fetch-calendar-buddy.js`)
+- Fetches events from macOS Calendar app
+- Saves formatted events to `src/data/calendar.json`
+- Events are filtered (removes sleep, standups, etc.) and formatted for display
+
+**Manual sync:**
+```bash
+# Run sync manually
+node scripts/fetch-calendar-buddy.js > src/data/calendar.json
+```
+
+### 4. Access the Dashboard
+
+**Primary (Browser with JS):**
+- URL: `http://192.168.1.140:5001/dashboard-portrait`
+- **Use this for the main Kindle browser** (launched via script)
+- Features: Full calendar grid, beautiful CSS, live clock, GitHub graph
+
+**Fallback (SSR / KOReader):**
+- URL: `http://192.168.1.140:5001/kindle`
+- Use this only if JavaScript fails or when using KOReader
+- Features: Basic table layout, static content
+
+**Desktop Preview:**
+- `http://192.168.1.140:5001/preview-portrait`
 
 ---
 
@@ -140,7 +177,7 @@ sshpass -p 'kindle' scp root@192.168.1.145:/tmp/file.png /local/path/
 
 **DO THIS:**
 ```bash
-sshpass -p 'kindle' ssh root@192.168.1.145 "lipc-set-prop com.lab126.appmgrd start 'app://com.lab126.browser?action=goto&url=http://192.168.1.140:5001/kindle'"
+sshpass -p 'kindle' ssh root@192.168.1.145 "lipc-set-prop com.lab126.appmgrd start 'app://com.lab126.browser?action=goto&url=http://192.168.1.140:5001/dashboard-portrait'"
 ```
 
 **Why this works:**
@@ -172,13 +209,14 @@ sshpass -p 'kindle' ssh root@192.168.1.145 "killall -9 kindle_browser 2>/dev/nul
 sleep 2
 
 # Launch browser with dashboard
-sshpass -p 'kindle' ssh root@192.168.1.145 "lipc-set-prop com.lab126.appmgrd start 'app://com.lab126.browser?action=goto&url=http://192.168.1.140:5001/kindle'"
+sshpass -p 'kindle' ssh root@192.168.1.145 "lipc-set-prop com.lab126.appmgrd start 'app://com.lab126.browser?action=goto&url=http://192.168.1.140:5001/dashboard-portrait'"
 
 # Wait for browser to start
 sleep 5
 
 # Capture screenshot to verify
-~/kindle-screenshot.sh
+sshpass -p 'kindle' ssh root@192.168.1.145 "~/kindle-screenshot.sh"
+sshpass -p 'kindle' scp root@192.168.1.145:/tmp/kindle_screenshot.png ~/Desktop/
 ```
 
 ### Close Browser
@@ -193,11 +231,14 @@ sshpass -p 'kindle' ssh root@192.168.1.145 "killall -9 kindle_browser 2>/dev/nul
 
 | Endpoint | Purpose | Use Case |
 |----------|---------|----------|
-| `/kindle` | Server-side rendered dashboard | **Use this for Kindle** |
-| `/preview-dashboard` | Client-side JS version | Desktop testing only |
+| `/dashboard-portrait` | Main dashboard (client-side JS) | **Use this for Kindle browser** |
+| `/kindle` | Server-side rendered dashboard | KOReader fallback |
+| `/preview-portrait` | Desktop preview wrapper | Development testing |
 | `/api/weather` | Live weather data | Gurugram, India |
-| `/api/calendar` | Mock calendar events | 30 events with overlaps |
-| `/api/todos` | Mock todo list | 5 tasks |
+| `/api/calendar` | Calendar events | Synced from macOS Calendar |
+| `/api/todos` | Todo list | CRUD operations |
+| `/api/github` | GitHub contribution data | Requires credentials |
+| `/api/hackernews` | HackerNews top stories | Ready for integration |
 
 ---
 
@@ -228,7 +269,7 @@ sshpass -p 'kindle' ssh root@192.168.1.145 "ps aux | grep kindle_browser | grep 
 
 ```bash
 # Test from Kindle
-sshpass -p 'kindle' ssh root@192.168.1.145 "curl -I http://192.168.1.140:5001/kindle"
+sshpass -p 'kindle' ssh root@192.168.1.145 "curl -I http://192.168.1.140:5001/dashboard-portrait"
 
 # Should return: HTTP/1.1 200 OK
 ```
@@ -237,8 +278,19 @@ sshpass -p 'kindle' ssh root@192.168.1.145 "curl -I http://192.168.1.140:5001/ki
 
 Server logs appear in the terminal where `npm run dev` is running. Watch for:
 - Weather API requests
+- Calendar sync operations (every 10 minutes)
 - Calendar/todo data fetches
 - Any errors or warnings
+
+### Check Calendar Sync Status
+
+```bash
+# Check if calendar.json exists and has recent data
+cat src/data/calendar.json | head -20
+
+# Check last sync time (look at file modification time)
+ls -lh src/data/calendar.json
+```
 
 ---
 
@@ -248,30 +300,53 @@ Server logs appear in the terminal where `npm run dev` is running. Watch for:
 
 ```
 /Users/ankur/D/Playground/kindle-upgrade/
-├── server.js                 # Express server with SSR
-├── package.json              # Dependencies
-├── README.md                 # Project documentation
-└── views/
-    ├── dashboard.html        # Client-side version (with JS)
-    ├── preview-dashboard.html # Iframe wrapper for desktop
-    └── weather.html          # Simple weather panel
+├── src/
+│   ├── server.js                 # Main Express server entry point
+│   ├── routes/
+│   │   ├── api.js                # API route handlers
+│   │   └── views.js               # View route handlers
+│   ├── services/
+│   │   ├── weather.js             # Weather service (Open-Meteo)
+│   │   ├── calendar.js            # Calendar service (icalBuddy sync)
+│   │   ├── todos.js               # Todo service
+│   │   ├── github.js              # GitHub service (GraphQL)
+│   │   └── hackernews.js          # HackerNews service
+│   ├── utils/
+│   │   └── ssr.js                 # Server-side rendering utilities
+│   ├── views/
+│   │   ├── dashboard-portrait.html # Main dashboard
+│   │   └── preview-portrait.html   # Preview wrapper
+│   └── data/
+│       ├── calendar.json          # Synced calendar data
+│       └── todos.json              # Todo data
+├── scripts/
+│   ├── fetch-calendar-buddy.js    # Calendar sync script (icalBuddy wrapper)
+│   ├── fetch-calendar.js          # Alternative calendar fetch
+│   └── fetch-reminders.js         # Reminders fetch script
+├── public/
+│   └── fonts/                     # Static font assets
+├── docs/
+│   ├── AGENT-MANUAL.md            # This file
+│   ├── conversation.md            # Development log
+│   └── archive/                   # Archived old files
+├── package.json                   # Node.js dependencies
+├── README.md                      # Project documentation
+└── .env.example                   # Environment variables template
 ```
 
 ### On Kindle
 
 ```
 /mnt/us/documents/
-└── dashboard.html            # Deployed server-rendered HTML
+└── dashboard.html                 # Deployed server-rendered HTML (optional manual fallback)
 
-/mnt/us/extensions/dashboard/  # KUAL extension
-├── menu.json                 # KUAL menu definition
-├── launch-browser.sh         # Browser launcher script
-├── close-chromium.sh         # Browser closer script
-├── open-server.sh            # Open server-rendered dashboard
-└── stop-all-refresh.sh       # Stop auto-refresh processes
+/mnt/us/extensions/dashboard/      # KUAL extension
+├── menu.json                     # KUAL menu definition
+├── launch-browser.sh             # Browser launcher script
+└── close-chromium.sh             # Browser closer script
 
 /root/
-└── kindle-screenshot.sh      # Screenshot capture tool
+└── kindle-screenshot.sh          # Screenshot capture tool
 ```
 
 ---
@@ -298,13 +373,13 @@ The Kindle has a KUAL launcher with pre-configured dashboard options:
 **Solution:**
 ```bash
 # 1. Verify server is running on Mac
-ps aux | grep "node server.js"
+ps aux | grep "node src/server.js"
 
 # 2. Verify server is listening on 0.0.0.0 (not 127.0.0.1)
 lsof -i :5001
 
 # 3. Test from Kindle
-sshpass -p 'kindle' ssh root@192.168.1.145 "curl http://192.168.1.140:5001/kindle | head -20"
+sshpass -p 'kindle' ssh root@192.168.1.145 "curl http://192.168.1.140:5001/dashboard-portrait | head -20"
 ```
 
 ### Issue: "Port 5001 already in use"
@@ -319,6 +394,9 @@ kill <PID>
 
 # Or kill all node processes
 killall node
+
+# Or change port in .env file
+echo "PORT=5002" > .env
 ```
 
 ### Issue: "SSH connection fails"
@@ -337,6 +415,41 @@ killall node
 sshpass -p 'kindle' ssh root@192.168.1.145 "echo 'Connected successfully'"
 ```
 
+### Issue: "Calendar not syncing"
+
+**Symptoms:** No events showing in dashboard
+
+**Solution:**
+```bash
+# 1. Check if calendar.json exists
+ls -lh src/data/calendar.json
+
+# 2. Check if icalBuddy is installed
+which icalBuddy
+
+# 3. Run sync manually
+node scripts/fetch-calendar-buddy.js > src/data/calendar.json
+
+# 4. Check server logs for sync errors
+# Look for "Calendar sync error" messages
+```
+
+### Issue: "GitHub graph not showing"
+
+**Symptoms:** GitHub widget shows mock data or is empty
+
+**Solution:**
+```bash
+# 1. Check if credentials are set
+cat .env | grep GITHUB
+
+# 2. Verify token has correct permissions
+# Token needs: read:user, read:org (for private contributions)
+
+# 3. Test API endpoint directly
+curl http://192.168.1.140:5001/api/github
+```
+
 ### Issue: "Browser shows wrong page"
 
 **Solution:**
@@ -348,7 +461,7 @@ sshpass -p 'kindle' ssh root@192.168.1.145 "killall -9 kindle_browser 2>/dev/nul
 sleep 2
 
 # Relaunch
-sshpass -p 'kindle' ssh root@192.168.1.145 "lipc-set-prop com.lab126.appmgrd start 'app://com.lab126.browser?action=goto&url=http://192.168.1.140:5001/kindle'"
+sshpass -p 'kindle' ssh root@192.168.1.145 "lipc-set-prop com.lab126.appmgrd start 'app://com.lab126.browser?action=goto&url=http://192.168.1.140:5001/dashboard-portrait'"
 ```
 
 ---
@@ -407,11 +520,11 @@ Browser launches successfully **without URL bar** (✅), but remains in **portra
 # Start server
 cd /Users/ankur/D/Playground/kindle-upgrade && npm run dev
 
-# SSH to Kindle
+# SSH to Kindle (Password: kindle)
 sshpass -p 'kindle' ssh root@192.168.1.145
 
 # Launch dashboard on Kindle
-sshpass -p 'kindle' ssh root@192.168.1.145 "killall -9 kindle_browser 2>/dev/null && sleep 1 && lipc-set-prop com.lab126.appmgrd start 'app://com.lab126.browser?action=goto&url=http://192.168.1.140:5001/kindle'"
+sshpass -p 'kindle' ssh root@192.168.1.145 "killall -9 kindle_browser 2>/dev/null && sleep 1 && lipc-set-prop com.lab126.appmgrd start 'app://com.lab126.browser?action=goto&url=http://192.168.1.140:5001/dashboard-portrait'"
 
 # Capture screenshot
 sshpass -p 'kindle' ssh root@192.168.1.145 "~/kindle-screenshot.sh" && sshpass -p 'kindle' scp root@192.168.1.145:/tmp/kindle_screenshot.png ~/Desktop/
@@ -420,7 +533,10 @@ sshpass -p 'kindle' ssh root@192.168.1.145 "~/kindle-screenshot.sh" && sshpass -
 sshpass -p 'kindle' ssh root@192.168.1.145 "killall -9 kindle_browser 2>/dev/null"
 
 # Check server accessibility
-sshpass -p 'kindle' ssh root@192.168.1.145 "curl -I http://192.168.1.140:5001/kindle"
+sshpass -p 'kindle' ssh root@192.168.1.145 "curl -I http://192.168.1.140:5001/dashboard-portrait"
+
+# Manual calendar sync
+node scripts/fetch-calendar-buddy.js > src/data/calendar.json
 ```
 
 ---
@@ -429,17 +545,18 @@ sshpass -p 'kindle' ssh root@192.168.1.145 "curl -I http://192.168.1.140:5001/ki
 
 ### Documentation Files
 
-- **conversation.md** - Detailed conversation log with full history
-- **README.md** - Project README in `/Users/ankur/D/Playground/kindle-upgrade/`
-- **PLAN.md** - Original project plan (may be outdated)
+- **README.md** - Project README in root directory
+- **docs/conversation.md** - Detailed conversation log with full history
+- **docs/PLAN.md** - Original project plan (may be outdated)
 
 ### Key Technical Learnings
 
 1. **KOReader doesn't execute JavaScript** - Must use server-side rendering
-2. **Old WebKit limitations** - Use tables, system fonts, avoid modern CSS
+2. **Old WebKit limitations** - Use tables, system fonts, avoid modern CSS (for KOReader)
 3. **Browser launch via lipc-set-prop** - Don't manually launch Chromium
 4. **Server must bind to 0.0.0.0** - Or Kindle can't access it
-5. **Always use server-rendered `/kindle` endpoint** - Not JS-based versions
+5. **Always use `/dashboard-portrait` for browser** - Not SSR version
+6. **Calendar sync runs automatically** - Background service every 10 minutes
 
 ### Git Repository
 
@@ -447,14 +564,8 @@ sshpass -p 'kindle' ssh root@192.168.1.145 "curl -I http://192.168.1.140:5001/ki
 # Location
 cd /Users/ankur/D/Playground/kindle-upgrade
 
-# Status: Initialized but no remote configured
-# Commits:
-# - f9751af: Add Kindle dashboard with weather, calendar, and todos
-# - f728bbf: Add comprehensive README
-
-# To push (need GitHub URL first):
-git remote add origin <github-url>
-git push -u origin main
+# Status: Public repository
+# Remote: https://github.com/ankurkakroo2/kindle-dashboard
 ```
 
 ---
@@ -464,17 +575,18 @@ git push -u origin main
 ### Do's ✅
 
 1. **Always use `lipc-set-prop` to launch browser** - It's the only reliable method
-2. **Test from desktop first** - Use `/preview-dashboard` to verify changes
+2. **Test from desktop first** - Use `/preview-portrait` to verify changes
 3. **Capture screenshots frequently** - Essential for e-ink verification
 4. **Use sshpass for automation** - Password is `kindle`
 5. **Check server logs** - Watch terminal where `npm run dev` is running
 6. **Update conversation.md** - Document discoveries and changes
+7. **Check calendar sync** - Verify `src/data/calendar.json` is updating
 
 ### Don'ts ❌
 
 1. **Don't try to manually launch Chromium binary** - Use system app manager
 2. **Don't set LD_LIBRARY_PATH before system commands** - Causes failures
-3. **Don't use JS-based endpoints for Kindle** - Must be server-side rendered
+3. **Don't use SSR endpoint for browser** - Use `/dashboard-portrait` instead
 4. **Don't assume CSS features work** - Test on actual device
 5. **Don't use framebuffer as primary solution** - User prefers browser
 6. **Don't forget the landscape requirement** - It's the current blocker
@@ -512,4 +624,4 @@ git push -u origin main
 
 ---
 
-*This manual is your starting point. Read conversation.md for detailed history and context.*
+*This manual is your starting point. Read docs/conversation.md for detailed history and context.*
