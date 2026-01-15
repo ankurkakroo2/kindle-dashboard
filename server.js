@@ -185,6 +185,26 @@ app.get('/preview-dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'preview-dashboard.html'));
 });
 
+app.get('/dashboard-portrait', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'dashboard-portrait.html'));
+});
+
+app.get('/preview-portrait', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'preview-portrait.html'));
+});
+
+app.get('/dashboard-vibe', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'dashboard-vibe.html'));
+});
+
+app.get('/preview-vibe', (req, res) => {
+    // We can reuse the preview wrapper or create a new one. 
+    // For simplicity, let's just serve the raw dashboard-vibe for now 
+    // or create a quick wrapper if we want the desktop framing.
+    // Actually, let's just serve the file directly as the 'preview' for now.
+    res.sendFile(path.join(__dirname, 'views', 'dashboard-vibe.html'));
+});
+
 // Server-side rendered dashboard for Kindle (no JavaScript needed)
 app.get('/kindle', async (req, res) => {
     try {
@@ -656,5 +676,5 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`  PUT /api/todos/:id`);
     console.log(`  DELETE /api/todos/:id`);
     console.log(`  GET  /`);
-    console.log(`Open in browser: http://192.168.1.146:5000`);
+    console.log(`Open in browser: http://192.168.1.140:${PORT}`);
 });

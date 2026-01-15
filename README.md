@@ -39,7 +39,7 @@ The dashboard uses server-side rendering because KOReader's HTML viewer does not
 
 1. **Server Setup**:
 ```bash
-cd /Users/ankur/kindle-dashboard
+cd /Users/ankur/D/Playground/kindle-upgrade
 npm install
 node server.js
 ```

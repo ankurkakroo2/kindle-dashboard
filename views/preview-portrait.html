@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard Portrait Preview - Kindle Oasis</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        .preview-container {
+            background: #444;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .preview-header {
+            color: #fff;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        iframe {
+            width: 1200px;
+            height: 1580px;
+            border: none;
+            background: #fff;
+            display: block;
+        }
+        .note {
+            color: #aaa;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <div class="preview-header">Kindle Oasis Portrait Preview (1264x1680)</div>
+        <iframe src="/dashboard-portrait"></iframe>
+        <div class="note">Actual Kindle size: 1264x1680. This shows compact portrait layout optimized for Chrome browser.</div>
+    </div>
+</body>
+</html>

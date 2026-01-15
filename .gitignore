@@ -1,2 +1,12 @@
 # OpenMemory - IDE/Assistant specific rules
 .cursor/rules/openmemory.mdc
+
+node_modules/
+.DS_Store
+.env
+*.log
+tmp/
+dashboard.html
+dashboard-es5.html
+test-simple.html
+.specstory/
