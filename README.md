@@ -2,6 +2,9 @@
 
 A Cal.com-inspired weather and calendar dashboard for jailbroken Kindle Oasis (10th Gen, firmware 5.18.2).
 
+<img width="851" height="932" alt="Screenshot 2026-01-16 at 2 16 54 AM" src="https://github.com/user-attachments/assets/4de54a74-2bae-4bb9-b277-43cdd2df3d9a" />
+
+
 ## Features
 
 - **Weather Display**: Live weather for Gurugram, India using Open-Meteo API
