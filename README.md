@@ -2,7 +2,7 @@
 
 A Cal.com-inspired weather and calendar dashboard for jailbroken Kindle Oasis (10th Gen, firmware 5.18.2).
 
-<img width="851" height="932" alt="Screenshot 2026-01-16 at 2 16 54 AM" src="https://github.com/user-attachments/assets/4de54a74-2bae-4bb9-b277-43cdd2df3d9a" />
+<img width="962" height="1024" alt="image" src="https://github.com/user-attachments/assets/183bcea8-9bd0-4c99-a2e3-3fc75d84bb38" />
 
 
 ## Features
