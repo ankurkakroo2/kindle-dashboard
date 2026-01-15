@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="300">
+    <meta name="viewport" content="width=1264, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <style>
+        /*
+           VIBE / NEO-BRUTALIST KINDLE THEME
+           Optimized for E-Ink (High Contrast, No Greys)
+        */
+
+        :root {
+            --border-width: 5px;
+            --shadow-offset: 8px;
+            --gap: 24px;
+            --font-main: "Helvetica Neue", "Amazon Ember", Arial, sans-serif;
+            --font-display: "Arial Black", "Helvetica Neue Condensed Black", "Helvetica Neue", Arial, sans-serif;
+            --font-mono: "Menlo", "SFMono-Regular", "Consolas", "Courier New", monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background: #ffffff;
+            color: #000000;
+            width: 1264px;
+            height: 1570px;
+            overflow: hidden;
+            letter-spacing: -0.2px;
+        }
+
+        /* UTILS */
+        .caps {
+            text-transform: uppercase;
+        }
+
+        .bold {
+            font-weight: 900;
+        }
+
+        .mono {
+            font-family: var(--font-mono);
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .col {
+            flex-direction: column;
+        }
+
+        .center {
+            align-items: center;
+            justify-content: center;
+        }
+
+        .js-b {
+            justify-content: space-between;
+        }
+
+        /* LAYOUT GRID */
+        .layout {
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            grid-template-rows: auto 1fr;
+            height: 100%;
+        }
+
+        /* HEADER (INVERTED) */
+        .header {
+            grid-column: 1 / -1;
+            background: #000;
+            color: #fff;
+            padding: 20px 28px;
+            border-bottom: var(--border-width) solid #000;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .header-date {
+            font-size: 56px;
+            /* Increased */
+            font-weight: 900;
+            line-height: 0.95;
+            letter-spacing: -2px;
+        }
+
+        .header-time {
+            font-size: 44px;
+            /* Increased */
+            font-weight: 900;
+            line-height: 0.9;
+            letter-spacing: -1px;
+        }
+
+        .header-time {
+            font-size: 24px;
+            font-weight: 900;
+            line-height: 0.95;
+            letter-spacing: -1px;
+        }
+
+        .header-time {
+            font-size: 56px;
+            font-weight: 900;
+            line-height: 0.9;
+            letter-spacing: -2px;
+            font-family: var(--font-display);
+            cursor: pointer;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            padding: 22px;
+            border-right: var(--border-width) solid #000;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            background: #fff;
+        }
+
+        /* MAIN CONTENT */
+        .main {
+            padding: 22px;
+            background: #fff;
+            position: relative;
+            /* Dotted background pattern for texture */
+            background-image: radial-gradient(#000 10%, transparent 11%);
+            background-size: 20px 20px;
+        }
+
+        .main {
+            background: #fff;
+        }
+
+        /* Reset to white for cleanliness */
+
+        /* CARDS (Brutalist) */
+        .card {
+            border: var(--border-width) solid #000;
+            padding: 0;
+            margin-bottom: 12px;
+            background: #fff;
+            box-shadow: var(--shadow-offset) var(--shadow-offset) 0px #000;
+            transition: transform 0.1s;
+        }
+
+        .card-header {
+            background: #000;
+            color: #fff;
+            padding: 8px 14px;
+            font-size: 20px;
+            font-weight: 900;
+            text-transform: uppercase;
+            border-bottom: var(--border-width) solid #000;
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-display);
+        }
+
+        .card-body {
+            padding: 16px;
+        }
+
+        /* WEATHER WIDGET (COMPACT) */
+        .weather-hero {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 12px;
+        }
+
+        .weather-left {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .weather-right {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: left;
+        }
+
+        .weather-icon {
+            font-size: 80px;
+            line-height: 1;
+            margin: 0;
+        }
+
+        .weather-temp {
+            font-size: 64px;
+            font-weight: 900;
+            line-height: 0.9;
+            letter-spacing: -3px;
+            font-family: var(--font-display);
+            text-align: left;
+        }
+
+        .weather-loc {
+            background: #000;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 900;
+            padding: 2px 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            align-self: flex-start;
+            margin-top: 4px;
+        }
+
+        .weather-stats {
+            grid-column: 1 / -1;
+            display: flex;
+            width: 100%;
+            border-top: 4px solid #000;
+            padding-top: 10px;
+            margin-top: 4px;
+        }
+
+        .stat-box {
+            flex: 1;
+            text-align: center;
+        }
+
+        .stat-val {
+            font-size: 22px;
+            font-weight: 900;
+            display: block;
+            font-family: var(--font-display);
+        }
+
+        .stat-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* TASK LIST */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .task-row {
+            display: flex;
+            align-items: flex-start;
+            padding: 10px 0;
+            border-bottom: 3px dashed #000;
+        }
+
+        .task-row:last-child {
+            border-bottom: none;
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 4px solid #000;
+            margin-right: 12px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 900;
+            box-shadow: 3px 3px 0 #000;
+            background: #fff;
+        }
+
+        .task-text {
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1.2;
+            text-transform: uppercase;
+        }
+
+        .task-done {
+            text-decoration: line-through;
+            opacity: 0.4;
+        }
+
+        /* GITHUB CONTRIBUTIONS */
+        .contrib-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .contrib-grid {
+            display: grid;
+            grid-template-rows: repeat(7, 1fr);
+            grid-template-columns: repeat(7, 1fr);
+            grid-auto-flow: column;
+            gap: 6px;
+            width: 100%;
+            height: 340px;
+        }
+
+        .contrib-cell {
+            width: 100%;
+            height: 100%;
+            border: 1px solid #000;
+            background: #fff;
+        }
+
+        .contrib-0 {
+            background: #fff;
+        }
+
+        .contrib-1 {
+            background: #e0e0e0;
+        }
+
+        .contrib-2 {
+            background: #a0a0a0;
+        }
+
+        .contrib-3 {
+            background: #000;
+        }
+
+        .contrib-legend {
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            gap: 10px;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-family: var(--font-display);
+        }
+
+        .legend-track {
+            display: flex;
+            gap: 4px;
+        }
+
+        .legend-cell {
+            width: 16px;
+            height: 16px;
+            border: 1px solid #000;
+        }
+
+        /* AGENDA */
+        .stream-header {
+            font-size: 38px;
+            font-weight: 900;
+            text-transform: uppercase;
+            border-bottom: 8px solid #000;
+            margin-bottom: 20px;
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-family: var(--font-display);
+        }
+
+        .stream-label {
+            letter-spacing: -2px;
+        }
+
+        .stream-count {
+            font-size: 16px;
+            background: #000;
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 20px;
+            vertical-align: middle;
+        }
+
+        .agenda-row {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            border: var(--border-width) solid #000;
+            background: #fff;
+            margin-bottom: 14px;
+            box-shadow: 8px 8px 0px #000;
+            min-height: 80px;
+        }
+
+        /* ACTIVE EVENT (NOW) */
+        .agenda-row.active {
+            background: #000;
+            color: #fff;
+            box-shadow: 8px 8px 0px #666;
+        }
+
+        .agenda-row.active .agenda-time {
+            background: #fff;
+            color: #000;
+            border-right: var(--border-width) solid #fff;
+        }
+
+        .agenda-row.active .agenda-time-dur {
+            background: #000;
+            color: #fff;
+            border: 1px solid #fff;
+        }
+
+        .agenda-row.active .tag {
+            border-color: #fff;
+            box-shadow: 3px 3px 0 #fff;
+        }
+
+        .agenda-row.active .tag-mtg {
+            background: #000;
+            color: #fff;
+            border: 2px solid #fff;
+        }
+
+        /* MONOSPACE NUMBERS */
+        .weather-temp,
+        .header-time,
+        .stat-val,
+        .agenda-time-start,
+        .agenda-time-dur {
+            font-family: "Courier New", Courier, monospace;
+            letter-spacing: -1px;
+        }
+
+        .agenda-time {
+            background: #000;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 10px;
+            border-right: var(--border-width) solid #000;
+        }
+
+        .agenda-time-start {
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: -1px;
+        }
+
+        .agenda-time-ampm {
+            font-size: 12px;
+            font-weight: 700;
+            margin-top: -4px;
+        }
+
+        .agenda-time-dur {
+            margin-top: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            background: #fff;
+            color: #000;
+            padding: 2px 6px;
+        }
+
+        .agenda-content {
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .agenda-title {
+            font-size: 25px;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: -1.5px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .agenda-meta {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tag {
+            border: 3px solid #000;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            box-shadow: 3px 3px 0 #000;
+        }
+
+        .tag-mtg {
+            background: #fff;
+        }
+
+        .tag-work {
+            background: #000;
+            color: #fff;
+        }
+
+        .tag-personal {
+            background: #fff;
+            border-style: dashed;
+        }
+
+        /* HN LIST (Editorial Style) */
+        .hn-container {
+            margin-top: 40px;
+        }
+
+        .hn-row {
+            display: flex;
+            align-items: flex-start;
+            border-bottom: 4px solid #000;
+            padding: 16px 0;
+            margin-bottom: 0;
+            background: transparent;
+            box-shadow: none;
+            min-height: auto;
+        }
+
+        .hn-rank {
+            background: transparent;
+            color: #000;
+            font-weight: 900;
+            font-size: 32px;
+            width: 50px;
+            display: block;
+            font-family: var(--font-mono);
+            border: none;
+            line-height: 0.8;
+            letter-spacing: -2px;
+        }
+
+        .hn-content {
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .hn-title {
+            font-size: 22px;
+            /* Adjusted to 22px */
+            font-weight: 900;
+            line-height: 1.1;
+            text-transform: none;
+            margin-bottom: 6px;
+            letter-spacing: -0.5px;
+        }
+
+        .hn-score {
+            font-size: 12px;
+            font-weight: 700;
+            background: #000;
+            color: #fff;
+            padding: 2px 6px;
+            display: inline-block;
+            align-self: flex-start;
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+        }
+
+        .empty-stream {
+            border: 6px dashed #ccc;
+            padding: 60px;
+            text-align: center;
+            font-size: 30px;
+            font-weight: 900;
+            color: #ccc;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="layout">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-date" id="date">LOADING</div>
+            <div class="header-time" id="time" onclick="window.location.reload()">--:--</div>
+        </div>
+
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <!-- WEATHER -->
+            <div class="card">
+                <div class="card-header">
+                    <span>LIVE</span>
+                    <span>GUR</span>
+                </div>
+                <div class="card-body weather-hero">
+                    <div class="weather-left">
+                        <div class="weather-icon" id="w-icon">☀️</div>
+                    </div>
+                    <div class="weather-right">
+                        <div class="weather-temp" id="w-temp">--°</div>
+                        <div class="weather-loc">GURUGRAM</div>
+                    </div>
+
+                    <div class="weather-stats">
+                        <div class="stat-box">
+                            <span class="stat-label">FEELS LIKE</span>
+                            <span class="stat-val" id="w-feels">--°</span>
+                        </div>
+                        <div class="stat-box" style="border-left: 3px solid #000">
+                            <span class="stat-label">HUMIDITY</span>
+                            <span class="stat-val" id="w-humid">--%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TASKS -->
+            <div class="card">
+                <div class="card-header">
+                    <span>TASKS</span>
+                    <span id="task-count">0</span>
+                </div>
+                <div class="card-body">
+                    <div class="task-list" id="todo-list"></div>
+                </div>
+            </div>
+
+            <!-- GITHUB CONTRIBUTIONS -->
+            <div class="card">
+                <div class="card-header">
+                    <span>GITHUB</span>
+                    <span class="mono">7W</span>
+                </div>
+                <div class="card-body contrib-container">
+                    <div class="contrib-grid" id="contrib-grid"></div>
+                    <div class="contrib-legend">
+                        <span>LESS</span>
+                        <div class="legend-track">
+                            <div class="legend-cell contrib-0"></div>
+                            <div class="legend-cell contrib-1"></div>
+                            <div class="legend-cell contrib-2"></div>
+                            <div class="legend-cell contrib-3"></div>
+                        </div>
+                        <span>MORE</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top:auto; font-weight:900; text-align:center; opacity:0.3; font-size:14px;">
+                SYSTEM ONLINE • v2.0
+            </div>
+        </div>
+
+        <!-- MAIN -->
+        <div class="main">
+            <div class="stream-header">
+                <span class="stream-label">AGENDA</span>
+                <span class="stream-count" id="agenda-count">0</span>
+            </div>
+
+            <div id="stream-container"></div>
+
+            <div id="empty-stream" class="empty-stream" style="display:none">
+                NO EVENTS • RELAX
+            </div>
+
+            <!-- HACKER NEWS -->
+            <div class="hn-container">
+                <div class="stream-header">
+                    <span class="stream-label">HACKER NEWS</span>
+                    <span class="stream-count">TOP 3</span>
+                </div>
+                <div id="hn-list">
+                    <!-- Stories -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://192.168.1.140:5001';
+
+        function init() {
+            updateTime();
+            setInterval(updateTime, 1000);
+
+            fetchData();
+            renderContrib();
+            setInterval(fetchData, 300000);
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const optionsDate = { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'Asia/Kolkata' };
+            const dateStr = now.toLocaleDateString('en-US', optionsDate);
+            document.getElementById('date').innerText = dateStr.toUpperCase();
+
+            const optionsTime = { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' };
+            document.getElementById('time').textContent = now.toLocaleTimeString('en-US', optionsTime);
+        }
+
+        async function fetchData() {
+            try {
+                const [wRes, cRes, tRes, gRes, hRes] = await Promise.all([
+                    fetch(`${API_BASE}/api/weather`),
+                    fetch(`${API_BASE}/api/calendar`),
+                    fetch(`${API_BASE}/api/todos`),
+                    fetch(`${API_BASE}/api/github`),
+                    fetch(`${API_BASE}/api/hackernews`)
+                ]);
+
+                renderWeather(await wRes.json());
+                renderCalendar(await cRes.json());
+                renderTodos(await tRes.json());
+                renderContrib(await gRes.json());
+                renderHN(await hRes.json());
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderWeather(data) {
+            const isDay = data.isDay === 1;
+            const iconsDay = {
+                0: '☀️', 1: '☁️', 2: '☁️', 3: '☁️',
+                45: '🌫', 48: '🌫',
+                51: '☔', 53: '☔', 55: '☔',
+                61: '☔', 63: '☔', 65: '☔',
+                80: '☔', 81: '☔', 82: '☔',
+                95: '⚡'
+            };
+            const iconsNight = {
+                0: '☾', 1: '☁️', 2: '☁️', 3: '☁️',
+                45: '🌫', 48: '🌫',
+                51: '☔', 53: '☔', 55: '☔',
+                61: '☔', 63: '☔', 65: '☔',
+                80: '☔', 81: '☔', 82: '☔',
+                95: '⚡'
+            };
+            const iconSet = isDay ? iconsDay : iconsNight;
+            const fallback = isDay ? '☀️' : '☾';
+
+            document.getElementById('w-temp').innerText = Math.round(data.temp) + '°';
+            document.getElementById('w-feels').innerText = Math.round(data.feelsLike) + '°';
+            document.getElementById('w-humid').innerText = data.humidity + '%';
+            document.getElementById('w-icon').innerText = iconSet[data.condition] || fallback;
+        }
+
+        function renderTodos(data) {
+            const list = document.getElementById('todo-list');
+            list.innerHTML = '';
+
+            const open = data.filter(t => !t.completed).length;
+            document.getElementById('task-count').innerText = open;
+
+            data.slice(0, 4).forEach(t => {
+                list.innerHTML += `
+                <div class="task-row ${t.completed ? 'task-done' : ''}">
+                    <div class="checkbox">${t.completed ? '✓' : ''}</div>
+                    <div class="task-text">${t.text}</div>
+                </div>
+            `;
+            });
+        }
+
+        function renderContrib(data) {
+            const grid = document.getElementById('contrib-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            if (!data || !Array.isArray(data)) return;
+
+            data.forEach(day => {
+                const cell = document.createElement('div');
+                cell.className = `contrib-cell contrib-${day.level}`;
+                if (day.future) {
+                    cell.style.visibility = 'hidden';
+                    cell.style.border = 'none';
+                    cell.style.background = 'transparent';
+                }
+                grid.appendChild(cell);
+            });
+        }
+
+        function renderHN(data) {
+            const list = document.getElementById('hn-list');
+            list.innerHTML = '';
+
+            data.forEach((story, i) => {
+                list.innerHTML += `
+                    <div class="hn-row">
+                        <div class="hn-rank">#${i + 1}</div>
+                        <div class="hn-content">
+                            <div class="hn-title">${story.title}</div>
+                            <div class="hn-score">${story.score} POINTS</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderCalendar(data) {
+            const list = document.getElementById('stream-container');
+            list.innerHTML = '';
+
+            const now = new Date();
+            const windowEnd = new Date(now.getTime() + 4 * 60 * 60 * 1000);
+
+            const allEvents = (data.events || []).sort((a, b) => new Date(a.start) - new Date(b.start));
+
+            const ignoredTitles = [
+                'sleep', 'dropping off kid', 'standups', 'morning chores',
+                'product / ops 1:1s', 'meetings', 'hiring', 'team 1:1s',
+                'focus time', 'ooo', 'lunch'
+            ];
+
+            const upcomingEvents = allEvents.filter(e => {
+                if (new Date(e.end) <= now) return false;
+                const lowerTitle = e.title.toLowerCase();
+                return !ignoredTitles.some(ignored => lowerTitle.includes(ignored));
+            });
+
+            let displayEvents;
+            let windowEvents = upcomingEvents.filter(e => new Date(e.start) < windowEnd);
+
+            if (windowEvents.length <= 5) {
+                displayEvents = upcomingEvents.slice(0, 6);
+            } else {
+                displayEvents = windowEvents.slice(0, 6);
+            }
+
+            const countEl = document.getElementById('agenda-count');
+            if (countEl) countEl.textContent = displayEvents.length;
+
+            if (displayEvents.length === 0) {
+                document.getElementById('empty-stream').style.display = 'block';
+                return;
+            }
+            document.getElementById('empty-stream').style.display = 'none';
+
+            displayEvents.forEach(e => {
+                const start = new Date(e.start);
+                const end = new Date(e.end);
+
+                let timeVal, ampm;
+
+                if (e.timeDisplay) {
+                    timeVal = e.timeDisplay.timeVal;
+                    ampm = e.timeDisplay.ampm;
+                } else {
+                    let h = start.getHours();
+                    let m = start.getMinutes();
+                    ampm = h >= 12 ? 'PM' : 'AM';
+                    let h12 = h % 12 || 12;
+                    let mStr = m < 10 ? '0' + m : m;
+                    timeVal = `${h12}:${mStr}`;
+                }
+
+                const duration = Math.round((end - start) / 60000);
+
+                let tagClass = 'tag-mtg';
+                if (e.type === 'work') tagClass = 'tag-work';
+                if (e.type === 'personal') tagClass = 'tag-personal';
+
+                const isActive = now >= start && now < end;
+                const activeClass = isActive ? 'active' : '';
+
+                list.innerHTML += `
+                <div class="agenda-row ${activeClass}">
+                    <div class="agenda-time">
+                        <div class="agenda-time-start">${timeVal}</div>
+                        <div class="agenda-time-ampm">${ampm}</div>
+                        <div class="agenda-time-dur">${duration}m</div>
+                    </div>
+                    <div class="agenda-content">
+                        <div class="agenda-title">${e.title}</div>
+                        <div class="agenda-meta">
+                            <span class="tag ${tagClass}">${e.type || 'EVENT'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            });
+        }
+
+        init();
+    </script>
+</body>
+
+</html>
